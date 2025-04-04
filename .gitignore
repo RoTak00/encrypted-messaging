@@ -1,0 +1,13 @@
+config.php
+error_log
+robots.txt
+cgi-bin
+assets/documents
+.well-known
+**.css.map
+.sass-cache
+.sass-cache/*
+**/*.scss
+**/*.log
+**/cache/
+resources/images/content/** 

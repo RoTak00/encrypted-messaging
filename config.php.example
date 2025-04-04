@@ -1,0 +1,25 @@
+<?php
+
+$SITE_NAME = "";
+
+$SERVERNAME = "";
+$USERNAME = "";
+$PASSWORD = "";
+$DATABASE = "";
+
+$ADMIN_PASSWORD = '';
+
+$PERSONAL_ADDRESS = "";
+
+$PHP_DISPLAY_ERRORS = 0;
+$PHP_DISPLAY_STARTUP_ERRORS = 0;
+error_reporting(0);
+
+$DEFAULT_TIMEZONE = "Europe/Bucharest";
+
+$subfolderName = "";
+//$subfolderName = "rotak/";
+
+$imageFolderName = "";
+//$imageFolderName = "images/";
+?>

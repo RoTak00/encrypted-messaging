@@ -1,0 +1,27 @@
+
+
+RewriteEngine On
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# Force WWW
+RewriteCond %{HTTP_HOST} !^www\. [NC]
+RewriteRule ^(.*)$ https://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# Exclude /admin/resources from being redirected through index.php
+RewriteCond %{REQUEST_URI} ^/resources/ [NC,OR]
+RewriteRule ^ - [L]
+
+# Redirect everything else to index.php (for non-admin requests)
+RewriteCond %{REQUEST_URI} !^/resources/ [NC]
+RewriteCond %{REQUEST_URI} !^/$
+RewriteCond %{REQUEST_URI} !\.\w+$
+RewriteRule ^(.*)$ /index.php?path=$1 [L,QSA]
+
+
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# This domain inherits the “PHP” package.
+# php -- END cPanel-generated handler, do not edit
