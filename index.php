@@ -36,6 +36,10 @@ $response = new Response($registry);
 
 $registry->add('response', $response);
 
+$encryption = new Encryption($registry);
+
+$registry->add('encryption', $encryption);
+
 // $user = new User($registry);
 
 // $registry->add('user', $user);

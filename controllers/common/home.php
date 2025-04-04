@@ -8,7 +8,8 @@ class CommonHomeController extends BaseController
     {
         $data = [];
 
-        $this->response->addScript('/resources/scripts/scroll-to.js');
+        $data['send_message'] = $this->url->link('enc/message/send');
+
         $data['footer'] = $this->loadController('common/footer');
 
 

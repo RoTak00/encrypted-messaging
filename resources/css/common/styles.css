@@ -1,0 +1,26 @@
+body {
+  background-color: rgb(197, 199, 197);
+}
+
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: rgb(245, 245, 245);
+  min-height: 100vh;
+}
+.wrapper .banner {
+  background-color: rgb(4, 48, 4);
+  color: white;
+  font-weight: bolder;
+  font-size: 3em;
+  text-align: center;
+  padding: 2em;
+}
+.wrapper .banner::after {
+  content: "Cyph.ro";
+}
+.wrapper .content {
+  padding: 3em;
+}
+
+/*# sourceMappingURL=styles.css.map */

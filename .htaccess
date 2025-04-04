@@ -11,10 +11,24 @@ RewriteCond %{HTTP_HOST} !^www\. [NC]
 RewriteRule ^(.*)$ https://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
 # Exclude /admin/resources from being redirected through index.php
+RewriteCond %{REQUEST_URI} ^/admin/resources/ [NC]
 RewriteCond %{REQUEST_URI} ^/resources/ [NC,OR]
 RewriteRule ^ - [L]
 
+# Redirect /admin/anything/else to admin/index.php
+RewriteCond %{REQUEST_URI} ^/admin/? [NC]
+RewriteCond %{REQUEST_URI} !^/admin/index\.php$ [NC]
+RewriteCond %{REQUEST_URI} !^/admin/?$ [NC]  # Avoid redirect for /admin or /admin/
+RewriteRule ^admin/?(.*)$ /admin/index.php?path=$1 [L,QSA]
+
+
+# Handle /admin without adding ?path=
+RewriteCond %{REQUEST_URI} ^/admin/?$ [NC]
+RewriteRule ^admin/?$ /admin/index.php [L]
+
 # Redirect everything else to index.php (for non-admin requests)
+RewriteCond %{REQUEST_URI} !^/admin [NC]
+RewriteCond %{REQUEST_URI} !^/admin/resources/ [NC]
 RewriteCond %{REQUEST_URI} !^/resources/ [NC]
 RewriteCond %{REQUEST_URI} !^/$
 RewriteCond %{REQUEST_URI} !\.\w+$
