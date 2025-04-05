@@ -38,9 +38,17 @@ class Encryption
             $data = json_encode($data);
         }
 
-        $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
-        $cipher = sodium_crypto_secretbox($data, $nonce, $key);
-        return base64_encode($nonce . $cipher);
+        try {
+
+            $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+            $cipher = sodium_crypto_secretbox($data, $nonce, $key);
+            return base64_encode($nonce . $cipher);
+        } catch (SodiumException $e) {
+            file_put_contents('resources/enc.log', "[" . date('Y-m-d H:i:s') . "] " . $e->getMessage() . "\n", FILE_APPEND);
+            return false;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     public function decryptSymmetric($data, $key)
@@ -49,7 +57,13 @@ class Encryption
         $nonce = mb_substr($data, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, '8bit');
         $cipher = mb_substr($data, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, null, '8bit');
 
-        return json_decode(sodium_crypto_secretbox_open($cipher, $nonce, $key), true);
+        try {
+            $decrypted_data = sodium_crypto_secretbox_open($cipher, $nonce, $key);
+            return json_decode($decrypted_data, true);
+        } catch (SodiumException $e) {
+            file_put_contents('resources/enc.log', "[" . date('Y-m-d H:i:s') . "] " . $e->getMessage() . "\n", FILE_APPEND);
+            return false;
+        }
     }
 
 
@@ -91,7 +105,25 @@ class Encryption
     public function decryptAsymmetric($data, $keypair)
     {
         $cipher = base64_decode($data);
-        return sodium_crypto_box_seal_open($cipher, $keypair);
+
+        try {
+            return sodium_crypto_box_seal_open($cipher, $keypair);
+        } catch (SodiumException $e) {
+            file_put_contents('resources/enc.log', "[" . date('Y-m-d H:i:s') . "] " . $e->getMessage() . "\n", FILE_APPEND);
+            return false;
+        }
+    }
+
+    function generate_uuid_v4()
+    {
+        $data = random_bytes(16);
+
+        // Set version to 0100 (UUIDv4)
+        $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+        // Set bits 6-7 to 10 (variant DCE 1.1)
+        $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
 

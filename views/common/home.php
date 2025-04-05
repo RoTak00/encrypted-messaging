@@ -11,9 +11,12 @@
                 <div class="col-sm-9">
                     <input class=" form-control" type="text" id="message" name="message"></label>
                 </div>
+                <div id="form-error" class="text-danger">
+
+                </div>
             </div>
             <div class="form-group row">
-                <button class="btn btn-primary">Send message</button>
+                <button class="btn btn-primary" id="btn-send-message">Send message</button>
             </div>
         </form>
     </div>
@@ -57,8 +60,32 @@
 
                 $('.content').append('<label class="mt-3">Responder Link</label>', responderInput);
                 $('.content').append('<label class="mt-2">Host Link</label>', hostInput);
+                $("#message").val("");
+            }).fail(function (jqXHR) {
+                var jsonResponse = jqXHR.responseJSON;
+
+                if (jsonResponse.error) {
+                    $("#form-error").text(jsonResponse.error);
+                }
             });
 
         });
+
+        $("#message").on("input", onFieldInput);
+        onFieldInput();
     });
+
+
+    function onFieldInput() {
+        $("#form-error").text("");
+
+        console.log($("#message").val().length);
+
+        if ($("#message").val().length > 0) {
+            $("#btn-send-message").removeAttr("disabled", false);
+        }
+        else {
+            $("#btn-send-message").attr("disabled", "disabled");
+        }
+    }
 </script>

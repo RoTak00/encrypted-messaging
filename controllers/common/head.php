@@ -10,11 +10,6 @@ class CommonHeadController extends BaseController
         $this->response->addScript("/resources/inc/bootstrap.bundle.min.js", [], 1);
         $this->response->addScript("/resources/inc/jquery.js", [], 1);
 
-
-        if ($this->setting->get('is_local') !== '1') {
-            $this->response->addScript("/resources/scripts/wireboard.js");
-        }
-
         $this->response->addStyle("/resources/css/common/styles.css");
 
         $data = [];

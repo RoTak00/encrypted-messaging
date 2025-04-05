@@ -21,7 +21,10 @@
             </div>
         <?php endif; ?>
 
+        <a href="<?= $home ?>">Send a new message</a>
     </div>
+
+
 
 
 

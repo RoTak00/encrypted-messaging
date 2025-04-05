@@ -16,9 +16,12 @@
                 <div class="col-sm-9">
                     <input class="form-control" type="text" id="response" name="response">
                 </div>
+                <div id="form-error" class="text-danger">
+
+                </div>
             </div>
             <div class="form-group row">
-                <button class="btn btn-primary">Send response</button>
+                <button class="btn btn-primary" id="btn-send-response">Send response</button>
             </div>
         </form>
         <div id="response-result" class="mt-3"></div>
@@ -44,7 +47,30 @@
             }).done(function () {
                 $('#response-result').text('Response sent successfully.').addClass('text-success');
                 $("#response").val('');
+            }).fail(function (jqXHR) {
+                var jsonResponse = jqXHR.responseJSON;
+
+                if (jsonResponse.error) {
+                    $("#form-error").text(jsonResponse.error);
+                }
             });
         });
+
+        $("#response").on("input", onFieldInput);
+        onFieldInput();
     });
+
+
+    function onFieldInput() {
+        $("#form-error").text("");
+
+        console.log($("#response").val().length);
+
+        if ($("#response").val().length > 0) {
+            $("#btn-send-response").removeAttr("disabled", false);
+        }
+        else {
+            //$("#btn-send-response").attr("disabled", "disabled");
+        }
+    }
 </script>

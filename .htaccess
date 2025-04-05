@@ -1,26 +1,23 @@
-
-
 RewriteEngine On
 
-# Force HTTPS
+# Redirect www to non-www (first, before HTTPS redirect)
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ https://%1%{REQUEST_URI} [R=301,L]
+
+# Force HTTPS (only if not HTTPS and not already redirected)
 RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-# Force WWW
-RewriteCond %{HTTP_HOST} !^www\. [NC]
-RewriteRule ^(.*)$ https://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
-
-# Exclude /admin/resources from being redirected through index.php
-RewriteCond %{REQUEST_URI} ^/admin/resources/ [NC]
-RewriteCond %{REQUEST_URI} ^/resources/ [NC,OR]
+# Exclude /admin/resources and /resources from being redirected through index.php
+RewriteCond %{REQUEST_URI} ^/admin/resources/ [NC,OR]
+RewriteCond %{REQUEST_URI} ^/resources/ [NC]
 RewriteRule ^ - [L]
 
 # Redirect /admin/anything/else to admin/index.php
 RewriteCond %{REQUEST_URI} ^/admin/? [NC]
 RewriteCond %{REQUEST_URI} !^/admin/index\.php$ [NC]
-RewriteCond %{REQUEST_URI} !^/admin/?$ [NC]  # Avoid redirect for /admin or /admin/
+RewriteCond %{REQUEST_URI} !^/admin/?$ [NC]
 RewriteRule ^admin/?(.*)$ /admin/index.php?path=$1 [L,QSA]
-
 
 # Handle /admin without adding ?path=
 RewriteCond %{REQUEST_URI} ^/admin/?$ [NC]
@@ -33,8 +30,6 @@ RewriteCond %{REQUEST_URI} !^/resources/ [NC]
 RewriteCond %{REQUEST_URI} !^/$
 RewriteCond %{REQUEST_URI} !\.\w+$
 RewriteRule ^(.*)$ /index.php?path=$1 [L,QSA]
-
-
 
 # php -- BEGIN cPanel-generated handler, do not edit
 # This domain inherits the “PHP” package.

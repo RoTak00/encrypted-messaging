@@ -12,14 +12,34 @@ class EncMessageController extends BaseController
 
         if (!isset($this->request->post['message'])) {
             http_response_code(400);
+            echo json_encode(['error' => 'Message is required']);
+            die();
+        }
+
+        $message = $this->request->post['message'];
+
+        if (empty(trim($message))) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Message cannot be empty']);
             die();
         }
 
         // encrypt the message
         $sym_key = $this->encryption->generateSymmetricKey();
+        if ($sym_key == false) {
+            http_response_code(500);
+            echo json_encode(['error' => 'An internal error has occured.']);
+            die();
+        }
         $url_sym_key = $this->encryption->urlencode($sym_key);
-        $data = ['date' => date("Y-m-d H:i:s"), 'message' => $this->request->post['message']];
+        $data = ['date' => date("Y-m-d H:i:s"), 'message' => $message];
         $encrypted = $this->encryption->encryptSymmetric($data, $sym_key);
+
+        if ($encrypted == false) {
+            http_response_code(500);
+            echo json_encode(['error' => 'An internal error has occured.']);
+            die();
+        }
 
 
         // create asymm key pair
@@ -29,6 +49,11 @@ class EncMessageController extends BaseController
 
 
         $enc_sym_key = $this->encryption->encryptAsymmetricWithPublic($sym_key, $keypair['public']);
+        if ($enc_sym_key == false) {
+            http_response_code(500);
+            echo json_encode(['error' => 'An internal error has occured.']);
+            die();
+        }
         $enc_sym_key = $this->encryption->urlencode($enc_sym_key);
 
         $this->loadModel('message/enc');
@@ -53,7 +78,7 @@ class EncMessageController extends BaseController
     {
         if (!isset($params[0]) || !isset($params[1])) {
 
-            $this->response->redirect($this->url->link('common/home'));
+            $this->response->redirect('common/home');
             return;
         }
 
@@ -65,11 +90,15 @@ class EncMessageController extends BaseController
         $message = $this->model_message_enc->get($message_id);
 
         if (!$message) {
-            $this->response->redirect($this->url->link('common/home'));
+            $this->response->redirect('common/home');
             return;
         }
 
         $dec_message = $this->encryption->decryptSymmetric($message['enc_message'], $key);
+        if (!$dec_message) {
+            $this->response->redirect('common/home');
+            return;
+        }
 
         $data = [
             'date' => $dec_message['date'],
@@ -97,24 +126,44 @@ class EncMessageController extends BaseController
 
         $message_id = $params[0];
 
-        $this->loadModel('message/enc');
-        $message = $this->model_message_enc->get($message_id);
-
-        if (!$message) {
+        if (!$message_id) {
             http_response_code(400);
+            echo json_encode(['error' => 'Please reload the page']);
             return;
         }
 
         if (!isset($this->request->post['response'])) {
             http_response_code(400);
+            echo json_encode(['error' => 'A response is required']);
+            return;
+        }
+
+        $response = $this->request->post['response'];
+
+        if (empty(trim($response))) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Response cannot be empty!']);
+            return;
+        }
+
+        $this->loadModel('message/enc');
+        $message = $this->model_message_enc->get($message_id);
+
+        if (!$message) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Please verify the link is valid']);
             return;
         }
 
         $pub_key = $this->encryption->urldecode($message['public_key']);
 
-        $response = $this->request->post['response'];
-
         $enc_response = $this->encryption->encryptAsymmetricWithPublic($response, $pub_key);
+
+        if (!$enc_response) {
+            http_response_code(500);
+            echo json_encode(['error' => 'An internal error has occured.']);
+            return;
+        }
 
         $this->model_message_enc->addResponse($message_id, $enc_response);
 
@@ -127,7 +176,7 @@ class EncMessageController extends BaseController
     {
         if (!isset($params[0]) || !isset($params[1])) {
 
-            $this->response->redirect($this->url->link('common/home'));
+            $this->response->redirect('common/home');
             return;
         }
 
@@ -139,7 +188,7 @@ class EncMessageController extends BaseController
         $message = $this->model_message_enc->get($message_id);
 
         if (!$message) {
-            $this->response->redirect($this->url->link('common/home'));
+            $this->response->redirect('common/home');
             return;
         }
 
@@ -149,7 +198,16 @@ class EncMessageController extends BaseController
         $sym_key = $this->encryption->urldecode($message['enc_sym_key']);
         $sym_key = $this->encryption->decryptAsymmetric($sym_key, $keypair);
 
+        if (!$sym_key) {
+            $this->response->redirect('common/home');
+            return;
+        }
+
         $dec_message = $this->encryption->decryptSymmetric($message['enc_message'], $sym_key);
+        if (!$dec_message) {
+            $this->response->redirect('common/home');
+            return;
+        }
 
         $responses_enc = $this->model_message_enc->getResponses($message_id);
 
@@ -158,11 +216,17 @@ class EncMessageController extends BaseController
             return $response;
         }, $responses_enc);
 
+        $responses_filtered = array_filter($responses, function ($response) {
+            return $response !== false;
+        });
+
         $data = [
             'date' => $dec_message['date'],
             'message' => $dec_message['message'],
-            'responses' => $responses
+            'responses' => $responses_filtered
         ];
+
+        $data['home'] = $this->url->link('common/home');
 
         $data['footer'] = $this->loadController('common/footer');
 
